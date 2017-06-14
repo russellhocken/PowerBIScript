@@ -52,52 +52,95 @@ causes = create_causes_list(base_causes)
 cols_to_delete_who = ["Admin1", "SubDiv", "List", "Frmat", "IM_Frmat", "Deaths1"]
 cols_to_delete_ihme = ["measure", "metric", "upper", "lower"]
 
-relevant_ages = ["<1",
-                 "1 to 4", "5 to 9",
-                 "10 to 14", "15 to 19",
-                 "20 to 24", "25 to 29",
-                 "30 to 34", "35 to 39",
-                 "40 to 44", "45 to 49",
-                 "50 to 54", "55 to 59",
-                 "60 to 64", "65 to 69",
-                 "70 to 74", "75 to 79",
-                 "80 plus"]
+relevant_ages_ihme = [
+    "<1",
+    "1 to 4", "5 to 9",
+    "10 to 14", "15 to 19",
+    "20 to 24", "25 to 29",
+    "30 to 34", "35 to 39",
+    "40 to 44", "45 to 49",
+    "50 to 54", "55 to 59",
+    "60 to 64", "65 to 69",
+    "70 to 74", "75 to 79",
+    "80 plus"
+]
 
-who_rename_dict = {"Deaths2": "Deaths at Age 0 Year",
-                   "Deaths3": "Deaths at Age 1 Year",
-                   "Deaths4": "Deaths at Age 2 Years",
-                   "Deaths5": "Deaths at Age 3 Years",
-                   "Deaths6": "Deaths at Age 4 Years",
-                   "Deaths7": "Deaths at Age 5-9 Years",
-                   "Deaths8": "Deaths at Age 10-14 Years",
-                   "Deaths9": "Deaths at Age 15-19 Years",
-                   "Deaths10": "Deaths at Age 20-24 Years",
-                   "Deaths11": "Deaths at Age 25-29 Years",
-                   "Deaths12": "Deaths at Age 30-34 Years",
-                   "Deaths13": "Deaths at Age 35-39 Years",
-                   "Deaths14": "Deaths at Age 40-44 Years",
-                   "Deaths15": "Deaths at Age 45-49 Years",
-                   "Deaths16": "Deaths at Age 50-54 Years",
-                   "Deaths17": "Deaths at Age 55-59 Years",
-                   "Deaths18": "Deaths at Age 60-64 Years",
-                   "Deaths19": "Deaths at Age 65-69 Years",
-                   "Deaths20": "Deaths at Age 70-74 Years",
-                   "Deaths21": "Deaths at Age 75-79 Years",
-                   "Deaths22": "Deaths at Age 80-84 Years",
-                   "Deaths23": "Deaths at Age 85-89 Years",
-                   "Deaths24": "Deaths at Age 90-94 Years",
-                   "Deaths25": "Deaths at Age 95 Years and Above",
-                   "Deaths26": "Deaths at Age Unspecified",
-                   "IM_Deaths1": "Infant Deaths at Age 0 Days",
-                   "IM_Deaths2": "Infant Deaths at Age 1-6 Days",
-                   "IM_Deaths3": "Infant Deaths at Age 7-27 Days",
-                   "IM_Deaths4": "Infant Deaths at Age 28-364 Days"}
+who_rename_dict = {
+    "Deaths2": "Deaths at Age 0 Year",
+    "Deaths3": "Deaths at Age 1 Year",
+    "Deaths4": "Deaths at Age 2 Years",
+    "Deaths5": "Deaths at Age 3 Years",
+    "Deaths6": "Deaths at Age 4 Years",
+    "Deaths7": "Deaths at Age 5-9 Years",
+    "Deaths8": "Deaths at Age 10-14 Years",
+    "Deaths9": "Deaths at Age 15-19 Years",
+    "Deaths10": "Deaths at Age 20-24 Years",
+    "Deaths11": "Deaths at Age 25-29 Years",
+    "Deaths12": "Deaths at Age 30-34 Years",
+    "Deaths13": "Deaths at Age 35-39 Years",
+    "Deaths14": "Deaths at Age 40-44 Years",
+    "Deaths15": "Deaths at Age 45-49 Years",
+    "Deaths16": "Deaths at Age 50-54 Years",
+    "Deaths17": "Deaths at Age 55-59 Years",
+    "Deaths18": "Deaths at Age 60-64 Years",
+    "Deaths19": "Deaths at Age 65-69 Years",
+    "Deaths20": "Deaths at Age 70-74 Years",
+    "Deaths21": "Deaths at Age 75-79 Years",
+    "Deaths22": "Deaths at Age 80-84 Years",
+    "Deaths23": "Deaths at Age 85-89 Years",
+    "Deaths24": "Deaths at Age 90-94 Years",
+    "Deaths25": "Deaths at Age 95 Years and Above",
+    "Deaths26": "Deaths at Age Unspecified",
+    "IM_Deaths1": "Infant Deaths at Age 0 Days",
+    "IM_Deaths2": "Infant Deaths at Age 1-6 Days",
+    "IM_Deaths3": "Infant Deaths at Age 7-27 Days",
+    "IM_Deaths4": "Infant Deaths at Age 28-364 Days"
+}
 
-ihme_rename_dict = {"sex": "Sex",
-                    "age": "Age",
-                    "cause": "Cause",
-                    "year": "Year",
-                    "val": "Total_Deaths"}
+ihme_rename_dict = {
+    "sex": "Sex",
+    "age": "Age",
+    "cause": "Cause",
+    "year": "Year",
+    "val": "Total_Deaths"
+}
+
+ihme_wrongly_named_countries = [
+    "United States",
+    "Alaska",
+    "French Guana",
+    "Congo (DRC)",
+    "Tanzania",
+    "Libya",
+    "Syria",
+    "Iran",
+    "Russia",
+    "North Korea",
+    "South Korea",
+    "Taiwan",
+    "Laos",
+    "Vietnam",
+    "Greenland"
+]
+
+# TODO get the right correct names for the line below
+ihme_corrected_names = [
+    "United States of America",
+    "Alaska",
+    "French Guana",
+    "Congo (DRC)",
+    "Tanzania",
+    "Libya",
+    "Syria",
+    "Iran",
+    "Russia",
+    "North Korea",
+    "South Korea",
+    "Taiwan",
+    "Laos",
+    "Vietnam",
+    "Greenland"
+]
 
 who_1_data = pd.read_csv("Morticd10_part1", low_memory=False)
 who_1_data_clean = who_1_data
@@ -136,13 +179,6 @@ who_2_data_clean["Source"] = "WHO"
 who_data_clean = pd.concat([who_1_data_clean, who_2_data_clean]).reset_index(drop=True)
 
 ihme_data = pd.read_csv("IHME-GBD_2015_DATA-e3f763c8-1.csv", low_memory=False)
-ihme_wrongly_named_countries = ["United States", "Alaska", "French Guana", "Congo (DRC)", "Tanzania", "Libya", "Syria",
-                                "Iran", "Russia", "North Korea", "South Korea", "Taiwan", "Laos", "Vietnam",
-                                "Greenland"]
-# TODO get the right correct names for the line below
-ihme_corrected_names = ["United States of America", "Alaska", "French Guana", "Congo (DRC)", "Tanzania", "Libya",
-                        "Syria", "Iran", "Russia", "North Korea", "South Korea", "Taiwan", "Laos", "Vietnam",
-                        "Greenland"]
 ihme_data_clean = ihme_data
 
 ihme_data_clean = ihme_data_clean[ihme_data_clean.metric == "Number"]
@@ -151,10 +187,10 @@ for col in cols_to_delete_ihme:
     del ihme_data_clean[col]
 
 ihme_data_clean = ihme_data_clean[ihme_data_clean.cause == "Drowning"]
-ihme_data_clean = ihme_data_clean[ihme_data_clean.age.isin(relevant_ages)]
+ihme_data_clean = ihme_data_clean[ihme_data_clean.age.isin(relevant_ages_ihme)]
 
 # TODO I have added line 144, please test in keeping with lines 130 and 132.
-ihme_data_clean.country.replace(ihme_wrongly_named_countries, ihme_corrected_names)
+ihme_data_clean.country.replace(ihme_wrongly_named_countries, ihme_corrected_names, inplace=True)
 
 ihme_data_clean.age.replace(["<1",
                              "1 to 4", "5 to 9",
