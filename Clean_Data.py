@@ -136,6 +136,13 @@ who_2_data_clean["Source"] = "WHO"
 who_data_clean = pd.concat([who_1_data_clean, who_2_data_clean]).reset_index(drop=True)
 
 ihme_data = pd.read_csv("IHME-GBD_2015_DATA-e3f763c8-1.csv", low_memory=False)
+ihme_wrongly_named_countries = ["United States", "Alaska", "French Guana", "Congo (DRC)", "Tanzania", "Libya", "Syria",
+                                "Iran", "Russia", "North Korea", "South Korea", "Taiwan", "Laos", "Vietnam",
+                                "Greenland"]
+# TODO get the right correct names for the line below
+ihme_corrected_names = ["United States of America", "Alaska", "French Guana", "Congo (DRC)", "Tanzania", "Libya",
+                        "Syria", "Iran", "Russia", "North Korea", "South Korea", "Taiwan", "Laos", "Vietnam",
+                        "Greenland"]
 ihme_data_clean = ihme_data
 
 ihme_data_clean = ihme_data_clean[ihme_data_clean.metric == "Number"]
@@ -144,8 +151,11 @@ for col in cols_to_delete_ihme:
     del ihme_data_clean[col]
 
 ihme_data_clean = ihme_data_clean[ihme_data_clean.cause == "Drowning"]
-
 ihme_data_clean = ihme_data_clean[ihme_data_clean.age.isin(relevant_ages)]
+
+# TODO I have added line 144, please test in keeping with lines 130 and 132.
+ihme_data_clean.country.replace(ihme_wrongly_named_countries, ihme_corrected_names)
+
 ihme_data_clean.age.replace(["<1",
                              "1 to 4", "5 to 9",
                              "10 to 14", "15 to 19",
