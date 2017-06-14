@@ -1,33 +1,13 @@
 import pandas as pd
-
+import argparse
 pd.options.mode.chained_assignment = None  # default='warn'
-import csv
-import requests
-from io import BytesIO
-from zipfile import ZipFile
-import fnmatch
 
-
-def download_data(data_url):
-    r = requests.get(data_url, stream=True)
-    r.raise_for_status()
-
-    z = ZipFile(BytesIO(r.content))
-    z.extractall()
-
-
-# Country Codes
-download_data("http://www.who.int/entity/healthinfo/statistics/country_codes.zip")
-
-# WHO Part 1
-download_data("http://www.who.int/entity/healthinfo/statistics/Morticd10_part1.zip")
-
-# WHO Part 2
-download_data("http://www.who.int/entity/healthinfo/statistics/Morticd10_part2.zip")
-
-# IHME
-download_data(
-    "http://www.s3.healthdata.org/querytool-2015-prod/e3f763c85541ed99829f92215856e892_files/IHME-GBD_2015_DATA-e3f763c8-1.zip")
+parser = argparse.ArgumentParser()
+parser.add_argument("-w1", "--who_1", action="store", dest="who_1", help="Please enter PATH of WHO 1 data", required=True)
+parser.add_argument("-w2", "--who_2", action="store", dest="who_2", help="Please enter PATH of WHO 2 data", required=True)
+parser.add_argument("-i", "--ihme", action="store", dest="ihme", help="Please enter PATH of IHME data", required=True)
+parser.add_argument("-c", "--codes", action="store", dest="country_codes", help="Please enter PATH of Country Code data", required=True)
+args = parser.parse_args()
 
 
 def create_causes_list(base_causes):
@@ -142,7 +122,7 @@ ihme_corrected_names = [
     "Greenland"
 ]
 
-who_1_data = pd.read_csv("Morticd10_part1", low_memory=False)
+who_1_data = pd.read_csv(args.who_1, low_memory=False)
 who_1_data_clean = who_1_data
 
 for col in cols_to_delete_who:
@@ -159,7 +139,7 @@ for i, row in who_1_data_clean.iterrows():
 
 who_1_data_clean["Source"] = "WHO"
 
-who_2_data = pd.read_csv("Morticd10_part2", low_memory=False)
+who_2_data = pd.read_csv(args.who_2, low_memory=False)
 who_2_data_clean = who_2_data
 
 for col in cols_to_delete_who:
@@ -178,7 +158,7 @@ who_2_data_clean["Source"] = "WHO"
 
 who_data_clean = pd.concat([who_1_data_clean, who_2_data_clean]).reset_index(drop=True)
 
-ihme_data = pd.read_csv("IHME-GBD_2015_DATA-e3f763c8-1.csv", low_memory=False)
+ihme_data = pd.read_csv(args.ihme, low_memory=False)
 ihme_data_clean = ihme_data
 
 ihme_data_clean = ihme_data_clean[ihme_data_clean.metric == "Number"]
@@ -225,7 +205,7 @@ ihme_data_clean = ihme_data_clean.rename(columns=ihme_rename_dict)
 ihme_data_clean["Source"] = "IHME"
 ihme_data_clean = ihme_data_clean.reset_index(drop=True)
 
-country_codes = pd.read_csv("country_codes", low_memory=False)
+country_codes = pd.read_csv(args.country_codes, low_memory=False)
 
 who_data_clean = who_data_clean.merge(country_codes, left_on="Country", right_on="country")
 
