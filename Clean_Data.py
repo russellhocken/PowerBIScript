@@ -2,6 +2,8 @@ import pandas as pd
 import argparse
 pd.options.mode.chained_assignment = None  # default='warn'
 
+print("Loading arguments")
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-w1", "--who_1", action="store", dest="who_1", help="Please enter PATH of WHO 1 data", required=True)
 parser.add_argument("-w2", "--who_2", action="store", dest="who_2", help="Please enter PATH of WHO 2 data", required=True)
@@ -9,8 +11,14 @@ parser.add_argument("-i", "--ihme", action="store", dest="ihme", help="Please en
 parser.add_argument("-c", "--codes", action="store", dest="country_codes", help="Please enter PATH of Country Code data", required=True)
 args = parser.parse_args()
 
+print("Arguments loaded:")
+print("WHO 1 PATH: ", args.who_1)
+print("WHO 2 PATH: ", args.who_2)
+print("IMHE PATH: ", args.ihme)
+print("Country Codes PATH: ", args.country_codes)
 
 def create_causes_list(base_causes):
+    print("Creating causes list")
     causes = []
 
     for cause in base_causes:
@@ -28,6 +36,8 @@ base_causes = ["W65", "W66", "W67", "W68", "W69", "W70", "W71", "W72", "W73", "W
                "Y21"]
 
 causes = create_causes_list(base_causes)
+
+print("Causes list: ", causes)
 
 cols_to_delete_who = ["Admin1", "SubDiv", "List", "Frmat", "IM_Frmat", "Deaths1"]
 cols_to_delete_ihme = ["measure", "metric", "upper", "lower"]
@@ -122,56 +132,83 @@ ihme_corrected_names = [
     "Greenland"
 ]
 
+print("Cleaning WHO 1")
 who_1_data = pd.read_csv(args.who_1, low_memory=False)
 who_1_data_clean = who_1_data
 
+print("Deleting columns")
 for col in cols_to_delete_who:
     del who_1_data_clean[col]
 
+print("Getting relavant causes")
 who_1_data_clean = who_1_data_clean[who_1_data_clean.Cause.isin(causes)]
+print("Replacing sex")
 who_1_data_clean.Sex.replace([1, 2], ["Male", "Female"], inplace=True)
+print("Renaming columns")
 who_1_data_clean = who_1_data_clean.rename(columns=who_rename_dict)
+print("Melting dataframe")
 who_1_data_clean = pd.melt(who_1_data_clean, id_vars=["Country", "Year", "Cause", "Sex"], var_name="Age",
                            value_name="Total_Deaths")
 
+print("Merging causes back into base causes")
 for i, row in who_1_data_clean.iterrows():
     who_1_data_clean.set_value(i, "Cause", row.Cause if row.Cause in base_causes else row.Cause[:-1])
 
+print("Adding 'WHO' Source column")
 who_1_data_clean["Source"] = "WHO"
 
+print("WHO 1 CLEAN")
+
+print("Cleaning WHO 2")
 who_2_data = pd.read_csv(args.who_2, low_memory=False)
 who_2_data_clean = who_2_data
 
+print("Deleting columns")
 for col in cols_to_delete_who:
     del who_2_data_clean[col]
 
+print("Getting relavant causes")
 who_2_data_clean = who_2_data_clean[who_2_data_clean.Cause.isin(causes)]
+print("Replacing sex")
 who_2_data_clean.Sex.replace([1, 2], ["Male", "Female"], inplace=True)
+print("Renaming columns")
 who_2_data_clean = who_2_data_clean.rename(columns=who_rename_dict)
+print("Melting dataframe")
 who_2_data_clean = pd.melt(who_2_data_clean, id_vars=["Country", "Year", "Cause", "Sex"], var_name="Age",
                            value_name="Total_Deaths")
 
+print("Merging causes back into base causes")
 for i, row in who_2_data_clean.iterrows():
     who_2_data_clean.set_value(i, "Cause", row.Cause if row.Cause in base_causes else row.Cause[:-1])
 
+print("Adding 'WHO' Source column")
 who_2_data_clean["Source"] = "WHO"
 
+print("WHO 2 CLEAN")
+
 who_data_clean = pd.concat([who_1_data_clean, who_2_data_clean]).reset_index(drop=True)
+
+print("Cleaning IHME")
 
 ihme_data = pd.read_csv(args.ihme, low_memory=False)
 ihme_data_clean = ihme_data
 
+print("Selecting 'Number' Metric")
 ihme_data_clean = ihme_data_clean[ihme_data_clean.metric == "Number"]
 
+print("Deleting columns")
 for col in cols_to_delete_ihme:
     del ihme_data_clean[col]
 
+print("Selecting 'Drowning' as cause")
 ihme_data_clean = ihme_data_clean[ihme_data_clean.cause == "Drowning"]
+print("Selecting relavent ages")
 ihme_data_clean = ihme_data_clean[ihme_data_clean.age.isin(relevant_ages_ihme)]
 
-# TODO I have added line 144, please test in keeping with lines 130 and 132.
-ihme_data_clean.country.replace(ihme_wrongly_named_countries, ihme_corrected_names, inplace=True)
+print("Renaming countries")
+ihme_data_clean.location.replace(ihme_wrongly_named_countries, ihme_corrected_names, inplace=True)
 
+print("Replacing age descriptions")
 ihme_data_clean.age.replace(["<1",
                              "1 to 4", "5 to 9",
                              "10 to 14", "15 to 19",
@@ -200,10 +237,14 @@ ihme_data_clean.age.replace(["<1",
                              "Deaths at Age 70-74 Years",
                              "Deaths at Age 75-79 Years",
                              "Deaths at Age 80+ Years"], inplace=True)
+print("Renaming columns")
 ihme_data_clean = ihme_data_clean.rename(columns=ihme_rename_dict)
 
+print("Adding 'IHME' Source column")
 ihme_data_clean["Source"] = "IHME"
 ihme_data_clean = ihme_data_clean.reset_index(drop=True)
+
+print("IHME CLEAN")
 
 country_codes = pd.read_csv(args.country_codes, low_memory=False)
 
